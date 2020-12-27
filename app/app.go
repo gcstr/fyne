@@ -48,8 +48,8 @@ func (app *fyneApp) UniqueID() string {
 	return app.uniqueID
 }
 
-func (app *fyneApp) NewWindow(title string) fyne.Window {
-	return app.driver.CreateWindow(title)
+func (app *fyneApp) NewWindow(title string, decorate bool, transparent bool) fyne.Window {
+	return app.driver.CreateWindow(title, decorate, transparent)
 }
 
 func (app *fyneApp) Run() {

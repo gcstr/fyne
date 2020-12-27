@@ -45,11 +45,12 @@ func initCursors() {
 var _ fyne.Window = (*window)(nil)
 
 type window struct {
-	viewport   *glfw.Window
-	viewLock   sync.RWMutex
-	createLock sync.Once
-	decorate   bool
-	fixedSize  bool
+	viewport    *glfw.Window
+	viewLock    sync.RWMutex
+	createLock  sync.Once
+	decorate    bool
+	fixedSize   bool
+	transparent bool
 
 	cursor   *glfw.Cursor
 	canvas   *glCanvas
@@ -1162,11 +1163,11 @@ func (w *window) waitForEvents() {
 	w.eventWait.Wait()
 }
 
-func (d *gLDriver) CreateWindow(title string) fyne.Window {
-	return d.createWindow(title, true)
+func (d *gLDriver) CreateWindow(title string, decorate bool, transparent bool) fyne.Window {
+	return d.createWindow(title, decorate, transparent)
 }
 
-func (d *gLDriver) createWindow(title string, decorate bool) fyne.Window {
+func (d *gLDriver) createWindow(title string, decorate bool, transparent bool) fyne.Window {
 	var ret *window
 	if title == "" {
 		title = defaultTitle
@@ -1174,7 +1175,7 @@ func (d *gLDriver) createWindow(title string, decorate bool) fyne.Window {
 	runOnMain(func() {
 		d.initGLFW()
 
-		ret = &window{title: title, decorate: decorate}
+		ret = &window{title: title, decorate: decorate, transparent: transparent}
 		// This channel will be closed when the window is closed.
 		ret.eventQueue = make(chan func(), 1024)
 		go ret.runEventQueue()
@@ -1191,17 +1192,23 @@ func (w *window) create() {
 	runOnMain(func() {
 		if !isWayland {
 			// make the window hidden, we will set it up and then show it later
-			glfw.WindowHint(glfw.Visible, 0)
+			//glfw.WindowHint(glfw.Visible, 0)
 		}
 		if w.decorate {
 			glfw.WindowHint(glfw.Decorated, 1)
 		} else {
-			glfw.WindowHint(glfw.Decorated, 0)
+			glfw.WindowHint(glfw.Decorated, 1)
 		}
 		if w.fixedSize {
-			glfw.WindowHint(glfw.Resizable, 0)
+			glfw.WindowHint(glfw.Resizable, 1)
 		} else {
 			glfw.WindowHint(glfw.Resizable, 1)
+		}
+
+		if w.transparent {
+			glfw.WindowHint(glfw.TransparentFramebuffer, 1)
+		} else {
+			glfw.WindowHint(glfw.TransparentFramebuffer, 1)
 		}
 		initWindowHints()
 
@@ -1294,7 +1301,7 @@ func (w *window) view() *glfw.Window {
 }
 
 func (d *gLDriver) CreateSplashWindow() fyne.Window {
-	win := d.createWindow("", false)
+	win := d.createWindow("", false, false)
 	win.SetPadded(false)
 	win.CenterOnScreen()
 	return win

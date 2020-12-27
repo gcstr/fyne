@@ -9,7 +9,7 @@ import (
 
 type dummyApp struct{}
 
-func (dummyApp) NewWindow(title string) Window {
+func (dummyApp) NewWindow(title string, decorate bool, transparent bool) Window {
 	return nil
 }
 
